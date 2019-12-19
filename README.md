@@ -1,13 +1,13 @@
-## OpenGL low-level 3D rendering API
+## opengl low-level 3d rendering api
 
 ### [dependencies]:
 * **mesa3d** > 
-	* sudo pacman -Sy mesa
-	* sudo xbps-install -S mesa
+	* sudo pacman -sy mesa
+	* sudo xbps-install -s mesa
 * **glad** > https://glad.dav1d.de/
 * **glfw** > 
-	* sudo pacman -Sy glfw-x11
-	* sudo xbps-install -S glfw glfw-devel
+	* sudo pacman -sy glfw-x11
+	* sudo xbps-install -s glfw glfw-devel
 * ...
 
-### [ developed/tested on Arch/Void Linux (using Xorg server) ]
+#### [developed/tested on arch/void linux (using xorg server)]
