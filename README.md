@@ -8,6 +8,7 @@
 * **glfw** > 
 	* sudo pacman -sy glfw-x11
 	* sudo xbps-install -s glfw glfw-devel
+* **stb_image** > https://github.com/nothings/stb/blob/master/stb_image.h
 * ...
 
 #### [developed/tested on arch/void linux (using xorg server)]
