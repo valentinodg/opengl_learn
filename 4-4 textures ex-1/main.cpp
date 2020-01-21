@@ -91,6 +91,7 @@ int main()
     //load and create a texture
     unsigned int texture1;
     unsigned int texture2;
+    
     //texture1
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
