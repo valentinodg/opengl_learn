@@ -9,6 +9,7 @@
 	* sudo pacman -sy glfw-x11
 	* sudo xbps-install -s glfw glfw-devel
 * **stb_image** > https://github.com/nothings/stb/blob/master/stb_image.h
+* **glm** > https://github.com/g-truc/glm [0.9.9.7]
 * ...
 
 #### [developed/tested on arch/void linux (using xorg server)]
