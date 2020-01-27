@@ -19,30 +19,12 @@ using namespace std;
 
 //functions prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
+glm::mat4 calculate_lookAt_matrix(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp);
 
 //macros
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
-
-//camera
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-bool firstMouse = true;
-float yaw = -90.0f;
-float pitch = 0.0f;
-float lastX = 800.0f / 2.0;
-float lastY = 600.0f / 2.0;
-float fov = 45.0f;
-
-//timing
-//deltatime -> time between current frame and last frame
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
 
 //main
 int main()
@@ -65,11 +47,6 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
-
-    //tell glfw to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     //glad: load all opengl function pointers 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -220,14 +197,14 @@ int main()
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
 
+    //pass projection matrix to shader
+    //(as projection matrix rarely changes there's no need to do this per frame)
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+    ourShader.setMat4("projection", projection);
+
     //render loop
     while(!glfwWindowShouldClose(window))
     {   
-        //per-frame time logic
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-        
         //input
         processInput(window);
 
@@ -244,14 +221,14 @@ int main()
 
         //activate shader
         ourShader.use();
-
-        //pass projection matrix to shader
-        //(in this case it could change every frame)
-        glm::mat4 projection = glm::perspective(glm::radians(fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-        ourShader.setMat4("projection", projection);
         
         //camera/view transformation
-        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glm::mat4 view = glm::mat4(1.0f);
+        float radius = 10.0f;
+        float camX = sin(glfwGetTime()) * radius;
+        float camZ = cos(glfwGetTime()) * radius;
+        //view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = calculate_lookAt_matrix(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         ourShader.setMat4("view", view);
 
         //render boxes
@@ -293,61 +270,41 @@ void processInput(GLFWwindow* window)
 {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
-    float cameraSpeed = 2.5 * deltaTime;
-    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
-//glfw -> whenever the mouse moves, this callback is called
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+//custom implementation of the lookAt function
+glm::mat4 calculate_lookAt_matrix(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp)
 {
-    if(firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-    
-    float xoffset = xpos - lastX;
-    //reversed since y-coordinates go from bottom to top
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
+    //1 Position = known
+    //2 calculate cameraDirection
+    glm::vec3 zaxis = glm::normalize(position - target);
+    //3 get positive right axis vector
+    glm::vec3 xaxis = glm::normalize(glm::cross(glm::normalize(worldUp), zaxis));
+    //4 calculate camera up vector
+    glm::vec3 yaxis = glm::cross(zaxis, xaxis);
 
-    float sensitivity = 0.001f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
+    //create translation and rotation matrix
+    //inglm we access elements as mat[col][row] due to column-major layout
+    glm::mat4 translation = glm::mat4(1.0f);
+    //third column, first row
+    translation[3][0] = -position.x;
+    translation[3][1] = -position.y;
+    translation[3][2] = -position.z;
+    glm::mat4 rotation = glm::mat4(1.0f);
+    //first column, first row
+    rotation[0][0] = xaxis.x;
+    rotation[1][0] = xaxis.y;
+    rotation[2][0] = xaxis.z;
+    //first column, second row
+    rotation[0][1] = yaxis.x;
+    rotation[1][1] = yaxis.y;
+    rotation[2][1] = yaxis.z;
+    //first column, third row
+    rotation[0][2] = zaxis.x;
+    rotation[1][2] = zaxis.y;
+    rotation[2][2] = zaxis.z;
 
-    yaw += xoffset;
-    pitch += yoffset;
-
-    //make sure that when pitch is out of bounds, screen doesn't get flipped
-    if(pitch > 89.0f)
-        pitch = 89.0f;
-    if(pitch < -89.0f)
-        pitch = -89.0f;
-    
-    glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(front);
-}
-
-//glfw -> whenever the mouse scroll wheel scrolls, this callback is called
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    if(fov >= 1.0f && fov <= 45.0f)
-        fov -= yoffset;
-    if(fov <= 1.0f)
-        fov = 1.0f;
-    if(fov >= 45.0f)
-        fov = 45.0f;
+    //return lookAt matrix as combination of translation and rotation matrix
+    //remember to read from right to left (first translation then rotation)
+    return rotation * translation;
 }
