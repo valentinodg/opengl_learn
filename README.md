@@ -1,3 +1,5 @@
+<p align='center'><img src="./opengl.svg" width="300"></p>
+
 ## opengl low-level 3d rendering api
 
 ### [dependencies]:
