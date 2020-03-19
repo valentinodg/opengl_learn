@@ -4,17 +4,21 @@
 
 ### [dependencies]:
 * **mesa3d** > 
-	* sudo pacman -Sy mesa
-	* sudo xbps-install -S mesa
+	* ```sudo pacman -Sy mesa```
+	* ```sudo xbps-install -S mesa```
 * **glad** > https://glad.dav1d.de/
 * **glfw** > 
-	* sudo pacman -Sy glfw-x11
-	* sudo xbps-install -S glfw glfw-devel
+	* ```sudo pacman -Sy glfw-x11```
+	* ```sudo xbps-install -S glfw glfw-devel```
 * **stb_image** > https://github.com/nothings/stb/blob/master/stb_image.h
 * **glm** > https://github.com/g-truc/glm [0.9.9.7]
 * **assimp** >
-	* sudo xbps-install -S assimp libassimp-devel
-	* \[generic\] >
-		* compile the lib using cmake
+	* ```sudo pacman -Sy assimp```
+	* ```sudo xbps-install -S assimp libassimp-devel```
+	* \[generic: natively compile the lib (version 3.3.1)\] >
+		* ```sudo pacman -Sy minizip zziplib```
+		* ```sudo xbps-install -S minizip-devel zziplib-devel```
+		* ```cmake CMakeLists.txt```
+		* ```make -jX``` (X: # of cpu cores > parallel processes)
 
 #### [developed/tested on arch/void linux (using xorg server)]
