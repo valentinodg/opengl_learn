@@ -12,13 +12,13 @@
 	* ```sudo xbps-install -S glfw glfw-devel```
 * **stb_image** > https://github.com/nothings/stb/blob/master/stb_image.h
 * **glm** > https://github.com/g-truc/glm [0.9.9.7]
-* **assimp** >
+* **assimp** > http://assimp.org/index.php/downloads [3.1.1]
 	* ```sudo pacman -Sy assimp```
 	* ```sudo xbps-install -S assimp libassimp-devel```
-	* \[generic: natively compile the lib (version 3.3.1)\] >
+	* or natively compile the lib >
 		* ```sudo pacman -Sy minizip zziplib```
 		* ```sudo xbps-install -S minizip-devel zziplib-devel```
 		* ```cmake CMakeLists.txt```
 		* ```make -jX``` (X: # of cpu cores > parallel processes)
 
-#### [developed/tested on arch/void linux (using xorg server)]
+#### [developed/tested on arch/void linux (using xorg server > x window system)]
