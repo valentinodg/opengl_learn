@@ -1,0 +1,25 @@
+#version 330 core
+out vec4 FragColor;
+
+in vec2 TexCoords;
+
+uniform sampler2D texture1;
+
+float near = 0.1;
+float far = 100.0;
+
+float LinearizeDepth(float depth)
+{
+    //back to normalized device coordinates
+    float z = depth * 2.0 - 1.0;
+    return (2.0 * near * far) / (far + near - z * (far- near));
+}
+
+void main()
+{
+    //because the linearized depth values range from near to far, most of its values will be above 1.0 and displayed as completely white
+    //by dividing the linear depth value by far in the main function, we convert the linear depth value to the range [0,1]
+    //(this way we can gradually see the scene become brighter the closer the fragment are to the projection frustum's far plane)
+    float depth = LinearizeDepth(gl_FragCoord.z) / far;
+    FragColor = vec4(vec3(depth) , 1.0);
+}
