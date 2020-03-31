@@ -74,12 +74,9 @@ int main()
     //configure global opengl state
     //let's enable the depth buffer
     glEnable(GL_DEPTH_TEST);
-    //always pass the depth test (same effect as glDisable(GL_DEPTH_TEST))
-    //glDepthFunc(GL_ALWAYS);
-    glDepthFunc(GL_LESS);
     
     //build and compile the shader program
-    Shader shader("12.1.depth_testing.vertex", "12.1.depth_testing.fragment");
+    Shader shader("13.1.blending.vertex", "13.1.blending.fragment");
 
     //set up vertex data (and buffer(s)) and configure vertex attributes
     float cubeVertices[] = {
@@ -140,6 +137,17 @@ int main()
          5.0f, -0.5f, -5.0f,  2.0f, 2.0f								
     };
 
+    float trasparentVertices[] = {
+        // positions          // texture Coords 
+         0.0f,  0.5f,  0.0f,  0.0f, 0.0f,
+         0.0f,  0.5f,  0.0f,  0.0f, 1.0f,
+         1.0f,  0.5f,  0.0f,  1.0f, 1.0f,
+
+         0.0f,  0.5f,  0.0f,  0.0f, 0.0f,
+         1.0f,  0.5f,  0.0f,  1.0f, 1.0f,
+         1.0f,  0.5f,  0.0f,  1.0f, 0.0f								
+    };
+
     //cube VAO
     unsigned int cubeVAO, cubeVBO;
     glGenVertexArrays(1, &cubeVAO);
@@ -151,7 +159,6 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glBindVertexArray(0);
 
     //plane VAO
     unsigned int planeVAO, planeVBO;
@@ -164,11 +171,34 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    //transparent VAO
+    unsigned int transparentVAO, trasparentVBO;
+    glGenVertexArrays(1, &transparentVAO);
+    glGenBuffers(1, &trasparentVBO);
+    glBindVertexArray(transparentVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, trasparentVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(trasparentVertices), &trasparentVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
 
     //load textures
     unsigned int cubeTexture = loadTexture("./textures/marble.jpg");
     unsigned int floorTexture = loadTexture("./textures/metal.png");
+    unsigned int transparentTexture = loadTexture("./textures/grass.png");
+    
+    //trasparent vegetation locations
+    vector<glm::vec3> vegetation
+    {
+        glm::vec3(-1.5f, 0.0f, -0.48f),
+        glm::vec3( 1.5f, 0.0f,  0.51f),
+        glm::vec3( 0.0f, 0.0f,  0.7f ),
+        glm::vec3(-0.3f, 0.0f, -2.3f ),
+        glm::vec3( 0.5f, 0.0f, -0.6f )
+    };
 
     //shader configuration
     shader.use();
@@ -193,12 +223,12 @@ int main()
         //activate shader
         shader.use();
 
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 model = glm::mat4(1.0f);
         
-        shader.setMat4("view", view);
         shader.setMat4("projection", projection);
+        shader.setMat4("view", view);
         
         //cubes
         glBindVertexArray(cubeVAO);
@@ -217,9 +247,21 @@ int main()
         //floor
         glBindVertexArray(planeVAO);
         glBindTexture(GL_TEXTURE_2D, floorTexture);
-        shader.setMat4("model",  glm::mat3(1.0f));
+        model = glm::mat4(1.0f);
+        shader.setMat4("model",  model);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
+
+        //vegetation
+        glBindVertexArray(transparentVAO);
+        glBindTexture(GL_TEXTURE_2D, transparentTexture);
+        for (GLuint i = 0; i < vegetation.size(); i++)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, vegetation[i]);
+            shader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+        
 
         //buffers swap and io events poll
         glfwSwapBuffers(window);
@@ -308,8 +350,10 @@ unsigned int loadTexture(const char * path)
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        //here we use GL_CLAMP_TO_EDGE to prevent semi-transparent borders
+        //due to interpolation it takes texels from next repeat
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
