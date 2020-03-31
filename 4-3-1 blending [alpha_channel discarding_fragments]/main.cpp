@@ -140,11 +140,11 @@ int main()
     float trasparentVertices[] = {
         // positions          // texture Coords 
          0.0f,  0.5f,  0.0f,  0.0f, 0.0f,
-         0.0f,  0.5f,  0.0f,  0.0f, 1.0f,
-         1.0f,  0.5f,  0.0f,  1.0f, 1.0f,
+         0.0f, -0.5f,  0.0f,  0.0f, 1.0f,
+         1.0f, -0.5f,  0.0f,  1.0f, 1.0f,
 
          0.0f,  0.5f,  0.0f,  0.0f, 0.0f,
-         1.0f,  0.5f,  0.0f,  1.0f, 1.0f,
+         1.0f, -0.5f,  0.0f,  1.0f, 1.0f,
          1.0f,  0.5f,  0.0f,  1.0f, 0.0f								
     };
 
@@ -178,7 +178,7 @@ int main()
     glGenBuffers(1, &trasparentVBO);
     glBindVertexArray(transparentVAO);
     glBindBuffer(GL_ARRAY_BUFFER, trasparentVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(trasparentVertices), &trasparentVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(trasparentVertices), trasparentVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
@@ -248,7 +248,7 @@ int main()
         glBindVertexArray(planeVAO);
         glBindTexture(GL_TEXTURE_2D, floorTexture);
         model = glm::mat4(1.0f);
-        shader.setMat4("model",  model);
+        shader.setMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         //vegetation
