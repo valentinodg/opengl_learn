@@ -140,7 +140,7 @@ int main()
          5.0f, -0.5f, -5.0f,  2.0f, 2.0f								
     };
 
-    float trasparentVertices[] = {
+    float transparentVertices[] = {
         // positions          // texture Coords 
          0.0f,  0.5f,  0.0f,  0.0f, 0.0f,
          0.0f, -0.5f,  0.0f,  0.0f, 1.0f,
@@ -176,12 +176,12 @@ int main()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
     //transparent VAO
-    unsigned int transparentVAO, trasparentVBO;
+    unsigned int transparentVAO, transparentVBO;
     glGenVertexArrays(1, &transparentVAO);
-    glGenBuffers(1, &trasparentVBO);
+    glGenBuffers(1, &transparentVBO);
     glBindVertexArray(transparentVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, trasparentVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(trasparentVertices), trasparentVertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
@@ -193,7 +193,7 @@ int main()
     unsigned int floorTexture = loadTexture("./textures/metal.png");
     unsigned int transparentTexture = loadTexture("./textures/blending_transparent_window.png");
     
-    //trasparent vegetation locations
+    //transparent vegetation locations
     vector<glm::vec3> windows
     {
         glm::vec3(-1.5f, 0.0f, -0.48f),
