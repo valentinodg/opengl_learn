@@ -1,4 +1,4 @@
-<p align='center'><img src="./openglx.svg" width="300"></p>
+<p align='center'><img src="./openglx.svg" width="350"></p>
 
 ## opengl low-level 3d rendering api
 
