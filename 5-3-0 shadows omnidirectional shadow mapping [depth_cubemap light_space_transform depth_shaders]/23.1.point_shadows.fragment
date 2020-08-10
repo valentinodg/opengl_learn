@@ -32,7 +32,7 @@ float ShadowCalculation(vec3 fragPos)
     float bias = 0.05;
     float shadow = currentDepth - bias > cloasestDepth ? 1.0 : 0.0;
     //display cloasestDepth as debug (to visualize depth cubemap)
-    //fragColor = vec4(vec3(cloasestDepth / far_plane), 1.0);
+    //FragColor = vec4(vec3(cloasestDepth / far_plane), 1.0);
 
     return shadow;
 }
