@@ -1,8 +1,4 @@
-<p align='center'><img src="./openglx.svg" width="350"></p>
-
-## opengl low-level 3d rendering api
-
-### [dependencies]:
+[dependencies]:
 * **mesa3d** > 
 	* ```sudo pacman -Sy mesa```
 	* ```sudo xbps-install -S mesa```
@@ -15,10 +11,3 @@
 * **assimp** > http://assimp.org/index.php/downloads [3.1.1]
 	* ```sudo pacman -Sy assimp```
 	* ```sudo xbps-install -S assimp libassimp-devel```
-	* or natively compile the lib >
-		* ```sudo pacman -Sy minizip zziplib```
-		* ```sudo xbps-install -S minizip-devel zziplib-devel```
-		* ```cmake CMakeLists.txt```
-		* ```make -jX``` (X: # of cpu cores > parallel processes)
-
-#### [developed/tested on arch/void linux (using xorg server > x window system)]
