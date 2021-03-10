@@ -1,7 +1,17 @@
-MAKEFLAGS+=--silent
+.PHONY:
 
-comp: main.cpp ../lib/glad.c
-	g++ main.cpp ../lib/glad.c -lglfw -lGL -lm -lXrandr -lXi -lX11 -lXxf86vm -lpthread -ldl -lXinerama -lXcursor
+MAKEFLAGS += -s
 
-debug: main.cpp ../lib/glad.c
-	g++ main.cpp ../lib/glad.c -lglfw -lGL -lm -lXrandr -lXi -lX11 -lXxf86vm -lpthread -ldl -lXinerama -lXcursor -Wall -pedantic --verbose
+CC = g++
+CFLAGS = -Wall -Wextra -pedantic -v
+INCS = ../../lib/glad.c
+LIBS = -lglfw -lGL -lm -ldl -lpthread
+XLIBS = -lXrandr -lXi -lX11 -lXxf86vm -lXinerama -lXcursor
+
+main: main.cpp $(INCS)
+	$(CC) -o $@.out $^ $(CFLAGS) $(LIBS) $(XLIBS)
+
+clean:
+	-rm *.out
+
+.PHONY: clean
